@@ -12,14 +12,6 @@ de facturas vencidas por cliente, con aislamiento por `tenant_id`.
    ```
 4. Cuando aparezca el aviso del puerto 8000, ábrelo. Para la vista, abre `frontend/index.html`.
 
-## Opción B — Local
-```bash
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-make setup
-make seed
-make run
-```
-
 ## Pruebas
 ```bash
 make test    # o: pytest -v
