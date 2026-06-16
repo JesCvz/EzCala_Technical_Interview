@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>mini-EzCala</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 20px; }
+    .row { display: flex; gap: 8px; margin-bottom: 16px; }
+    input, button { padding: 8px; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+    .empty { color: #888; }
+  </style>
+</head>
+<body>
+  <h1>mini-EzCala — Facturas vencidas</h1>
+  <div class="row">
+    <input id="tenant" placeholder="Tenant (ej. tenant_A)" value="tenant_A" />
+    <input id="customer" placeholder="Customer ID (ej. 1)" value="1" />
+    <button onclick="load()">Buscar</button>
+  </div>
+  <table>
+    <thead>
+      <tr><th>NetSuite ID</th><th>Monto</th><th>Moneda</th><th>Vence</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    // NOTA: el frontend es deliberadamente mínimo. Es opcional que el
+    // candidato lo amplíe; sirve para ver cómo conecta front <-> back.
+    async function load() {
+      const tenant = document.getElementById('tenant').value;
+      const customer = document.getElementById('customer').value;
+      const rows = document.getElementById('rows');
+      rows.innerHTML = '';
+      try {
+        const res = await fetch(`http://localhost:8000/api/v1/customers/${customer}/overdue`, {
+          headers: { 'X-Tenant-Id': tenant }
+        });
+        if (!res.ok) {
+          rows.innerHTML = `<tr><td colspan="4" class="empty">Error ${res.status}</td></tr>`;
+          return;
+        }
+        const data = await res.json();
+        if (data.length === 0) {
+          rows.innerHTML = `<tr><td colspan="4" class="empty">Sin facturas vencidas</td></tr>`;
+          return;
+        }
+        for (const inv of data) {
+          rows.innerHTML += `<tr>
+            <td>${inv.netsuite_invoice_id}</td>
+            <td>${inv.amount_remaining}</td>
+            <td>${inv.currency}</td>
+            <td>${inv.due_date}</td>
+          </tr>`;
+        }
+      } catch (e) {
+        rows.innerHTML = `<tr><td colspan="4" class="empty">No se pudo conectar al backend</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>
